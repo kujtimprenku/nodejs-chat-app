@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
+const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,9 +17,20 @@ io.on('connection', (socket) => {
     console.log('New WebSocket connection.');
     socket.emit('message', 'Welcome');
 
-    socket.on('sendMessage', (message) => {
+    socket.broadcast.emit('message', 'A new user has joined!');
+
+    socket.on('sendMessage', (message, callback) => {
         io.emit('message', message);
+        callback('Delivered');
     });
+
+    socket.on('sendLocation', (cords) => {
+       io.emit('message', `https://www.google.com/maps?q=${cords.latitude},${cords.longitude}`);
+    });
+
+    socket.on('disconnect', () => {
+        io.emit('message', 'A user left!');
+    })
 });
 
 server.listen(port, () => {
