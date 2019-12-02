@@ -20,12 +20,18 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('message', 'A new user has joined!');
 
     socket.on('sendMessage', (message, callback) => {
+        const filter = new Filter();
+        if (filter.isProfane(message)) {
+            return callback('Profanity is not allowed');
+        }
+
         io.emit('message', message);
-        callback('Delivered');
+        callback();
     });
 
-    socket.on('sendLocation', (cords) => {
-       io.emit('message', `https://www.google.com/maps?q=${cords.latitude},${cords.longitude}`);
+    socket.on('sendLocation', (cords, callback) => {
+       io.emit('locationMessage', `https://www.google.com/maps?q=${cords.latitude},${cords.longitude}`);
+       callback();
     });
 
     socket.on('disconnect', () => {
